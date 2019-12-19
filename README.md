@@ -1,4 +1,6 @@
-# Benjolis
+# A norns version of Alejandro Olarte's Benjolis SC patch
+
+## Benjolis
 Instrument inspired from Rob Hordijk's Benjolin, it requires sc3-plugins (PulseDPW, SVF and DFM1)
 
 outSignal:
@@ -11,5 +13,3 @@ outSignal:
 
 Enjoy! Alejandro Olarte
 https://scsynth.org/t/benjolin-inspired-instrument/1074<Paste>
-
-Norns version: Scott Cazan (12/2019)
