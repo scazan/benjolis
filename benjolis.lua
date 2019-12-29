@@ -39,7 +39,7 @@ local dialValues = {
   0, 0,   0, 0,   0, 0,
 }
 
-local listIndex = 1
+local controlPairIndex = 1
 local paramsInList = {}
 
 local SCREEN_FRAMERATE = 15
@@ -143,7 +143,7 @@ end
     
 -- encoder function
 function enc(n, delta)
-    local dialGroupIndex = (listIndex * 2) - 1
+    local dialGroupIndex = (controlPairIndex * 2) - 1
     
     if n == 1 then
       dialValues[12] = util.clamp(dialValues[12] + util.clamp(delta, -0.01, 0.01), 0, 1)
@@ -170,9 +170,9 @@ function key(n, z)
     print("shift", n, z)
   else
     if ((z == 1) and (n == 2)) then
-      listIndex = util.clamp(listIndex - 1, 1, 6)
+      controlPairIndex = util.clamp(controlPairIndex - 1, 1, 6)
     elseif ((z == 1) and (n == 3)) then
-      listIndex = util.clamp(listIndex + 1, 1, 6)
+      controlPairIndex = util.clamp(controlPairIndex + 1, 1, 6)
     end
   end
 
@@ -189,15 +189,15 @@ function redraw()
   screen.level(1)
   
   local indexToDraw = 1
-  local markerXOffset = 21 + ((listIndex-1) * 40)
+  local markerXOffset = 21 + ((controlPairIndex-1) * 40)
   for i=1,numDials do
     dials[i]:redraw()
     dials[i].active = false
     
-    if (indexToDraw == listIndex) then
+    if (indexToDraw == controlPairIndex) then
       local rowIndex = 1
       local markerXCurrentOffset = markerXOffset
-      if (listIndex > 3) then
+      if (controlPairIndex > 3) then
         rowIndex = 2
         markerXCurrentOffset = markerXOffset - ((4-1) * 40)
       end
@@ -212,8 +212,8 @@ function redraw()
     end
   end
   
-  dials[(listIndex) * 2].active = true
-  dials[(listIndex * 2) - 1].active = true
+  dials[(controlPairIndex) * 2].active = true
+  dials[(controlPairIndex * 2) - 1].active = true
   
   screen.update()
 end
