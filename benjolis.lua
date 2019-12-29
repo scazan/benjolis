@@ -2,13 +2,11 @@ local UI = require "ui"
 local ControlSpec = require "controlspec"
 engine.name = 'Benjolis'
 
-local encoders = {
-  0, 0, 0
-}
+local dials = {}
+local numDials = 12
 
-local buttons = {
-  0, 0, 0
-}
+local listIndex = 4
+local paramsInList = {}
 
 local SCREEN_FRAMERATE = 15
 local screen_refresh_metro
@@ -50,20 +48,29 @@ function init()
   params:add{type = "control", controlspec = ControlSpec.new( 0.0, 6.0, "lin", 1, 6), id = "setOutSignal", name = "out signal", action = engine.setOutSignal}
   params:add{type = "control", controlspec = ControlSpec.new( 0.0, 6.0, "lin", 1, 6), id = "setGain", name = "gain", action = engine.setGain}
   
-  -- GUI
-  
   -- screen: turn on anti-alias
   screen.aa(1)
   screen.line_width(1.0)
-  scrolling_list = UI.ScrollingList.new(8, 8, 1, {
-    "freqs: "..params:get("setFreq1").."hz : "..params:get("setFreq2").."hz",
-    "filter: "..params:get("setFiltFreq").."hz   type: "..params:get("setFilterType"),
-    "loop: "..params:get("setLoop"),
-    "rungler filter: "..params:get("setRunglerFilt").."hz  Q: "..params:get("setQ"),
-    "runglers: "..params:get("setRungler1").."hz : "..params:get("setRungler2").."hz",
-    "scale: "..params:get("setScale").." out: "..params:get("setOutSignal"),
-  })
-
+  
+  -- IDs and short names
+  paramsInList = {
+      {"setFreq1", "f1", "hz"},
+      {"setFreq2", "f2", "hz"},
+      {"setFilterFreq", "flt", "hz"},
+      {"setFilterType", "typ", ""},
+      {"setLoop", "loop", ""},
+      {"", "", ""},
+      {"setRunglerFilt", "rflt", "hz"},
+      {"setQ", "Q", ""},
+      {"setRungler1", "r1", "hz"},
+      {"setRungler2", "r2", "hz"},
+      {"setScale", "scl", ""},
+      {"setOutSignal", "out", ""},
+  }
+  
+  -- GUI
+  addDials()
+  
   -- Start drawing to screen
   screen_refresh_metro = metro.init()
   screen_refresh_metro.event = function()
@@ -76,12 +83,43 @@ function init()
   
 end
   
+function addDials()
+  -- make all the dials
+  local dialSpacer = 20
+  local row = 0
+  local numColumns = 6
+  
+  for i=1,numDials do
+    local xOffset = 5 + (dialSpacer * ((i-1) % numColumns)) 
+    local yOffset = 5 + (row * 30)
+    local extraSpace = 0;
+    
+    if ((i % 2) == 1) then
+      xOffset = xOffset + 5
+    end
+    
+    dials[i] = UI.Dial.new(xOffset, yOffset, 12, 25, 0, 100, 1, 0, nil, paramsInList[i][3], paramsInList[i][2])
+    
+    if ((i % numColumns) == 0) then
+      row = row + 1
+      end
+  end
+end
+    
 -- encoder function
 function enc(n, delta)
     if n == 1 then
-      scrolling_list:set_index_delta(util.clamp(delta, -1, 1))
+      listIndex = util.clamp(listIndex + util.clamp(delta, -1, 1), 1, 6)
+    elseif n == 2 then
+      local dialGroupIndex = (listIndex * 2) - 1
+      --params:set(paramsInList[dialGroupIndex][1], 190.0)
+      dials[dialGroupIndex]:set_value_delta(delta)
+    elseif n == 3 then
+      local dialGroupIndex = (listIndex * 2)
+      --params:set(paramsInList[dialGroupIndex][1], 0.0)
+      dials[dialGroupIndex]:set_value_delta(delta)
     end
-    
+      
   screen_dirty = true
 end
 
@@ -108,14 +146,33 @@ function redraw()
   
   -- set pixel brightness (0-15)
   screen.level(1)
-
-  -- show title
-  screen.move(95, 8)
-  screen.text("benjolis")
-
-  screen.level(15)
-  scrolling_list:redraw()
   
-  -- refresh screen
+  local indexToDraw = 1
+  local markerXOffset = 21 + ((listIndex-1) * 40)
+  for i=1,numDials do
+    dials[i]:redraw()
+    dials[i].active = false
+    
+    if (indexToDraw == listIndex) then
+      local rowIndex = 1
+      local markerXCurrentOffset = markerXOffset
+      if (listIndex > 3) then
+        rowIndex = 2
+        markerXCurrentOffset = markerXOffset - ((4-1) * 40)
+      end
+    --  screen.level(15)
+     -- screen.move(markerXCurrentOffset, 4 + ((rowIndex-1) * 30))
+      --screen.text("▼")
+    end
+    
+    
+    if (i%2 == 1) then
+      indexToDraw = indexToDraw + 1
+    end
+  end
+  
+  dials[(listIndex) * 2].active = true
+  dials[(listIndex * 2) - 1].active = true
+  
   screen.update()
 end
