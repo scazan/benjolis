@@ -1,3 +1,32 @@
+-- Benjolis
+--
+-- A norns version of Alejandro Olarte's Benjolis SC patch
+-- Instrument inspired from Rob Hordijk's Benjolin, it requires sc3-plugins (PulseDPW, SVF and DFM1)
+-- 
+-- UI:
+-- Use buttons 2 and 3 to
+-- cycle through pairs of dials.
+-- 
+-- Use encoders 2 and 3 to
+-- adjust the left and right
+-- dials of the selected
+-- pair.
+-- 
+-- Use encoder 1 to 
+-- control volume.
+-- 
+-- If you hold button 1 (shift)
+-- and use button 2, you will
+-- have a momentary mute.
+-- 
+-- If you hold button 1 (shift)
+-- and use button 3, you will
+-- have a mute that toggles.
+--
+-- Thanks to Alejandro Olarte
+-- for the SynthDef
+
+
 local UI = require "ui"
 local ControlSpec = require "controlspec"
 engine.name = 'Benjolis'
