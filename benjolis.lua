@@ -9,8 +9,7 @@
 --
 -- Use encoders 2 and 3 to
 -- adjust the left and right
--- dials of the selected
--- pair.
+-- dials of the pair
 --
 -- Use encoder 1 to 
 -- control volume.
@@ -129,7 +128,7 @@ function addDials()
       xOffset = xOffset + 5
     end
 
-    dials[i] = UI.Dial.new(xOffset, yOffset, 12, params:get_raw(paramsInList[i][0]), 0, 1, 0.01, 0, nil, paramsInList[i][3], paramsInList[i][2])
+    dials[i] = UI.Dial.new(xOffset, yOffset, 12, params:get_raw(paramsInList[i][1]), 0, 1, 0.01, 0, nil, paramsInList[i][3], paramsInList[i][2])
 
     if ((i % numColumns) == 0) then
       row = row + 1
@@ -158,7 +157,7 @@ function enc(n, delta)
     elseif n == 3 then
       local paramID = paramsInList[dialGroupIndex+1][1]
 
-      setParam(paramID, dialGroupIndex, deltaValue)
+      setParam(paramID, dialGroupIndex+1, deltaValue)
     end
 
   screen_dirty = true
@@ -172,7 +171,6 @@ function key(n, z)
   if (n == 1) then
     shift = z
   elseif (shift == 1) then
-    print("shift", n, z)
     if (n == 2) then
       -- momentary mute state
       if (z == 1) then
@@ -187,9 +185,11 @@ function key(n, z)
       if (muted) then
         params:set_raw("setAmp", stashedVol)
         stashedVol = 0
+        muted = false
       else
         stashedVol = params:get_raw("setAmp")
         params:set_raw("setAmp", 0)
+        muted = true
       end
     end
   else
