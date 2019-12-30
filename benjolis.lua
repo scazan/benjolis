@@ -147,9 +147,7 @@ function enc(n, delta)
     local deltaValue = util.clamp(delta, -0.01, 0.01)
 
     if n == 1 then
-      -- TODO: Should I use delta()
-      params:set_raw("setAmp", util.clamp(params:get_raw("setAmp") + deltaValue, 0, 1))
-      dials[12]:set_value(params:set_raw("setAmp"))
+      setParam("setAmp", 12, deltaValue)
     elseif n == 2 then
       local paramID = paramsInList[dialGroupIndex][1]
 
