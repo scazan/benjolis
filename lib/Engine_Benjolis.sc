@@ -10,7 +10,6 @@ outSignal:
 6-Filter output
 
 Enjoy! Alejandro Olarte
-https://raw.githubusercontent.com/Hyppasus/supercollider-examples/master/Benjolisc.scd
 
 Norns version: Scott Cazan (12/2019)
 */
@@ -86,79 +85,74 @@ Engine_Benjolis : CroneEngine {
 
             Out.ar(out, LeakDC.ar(output * amp ! 2));
         }).add;
+        
+        context.server.sync;
 
         benjolisSynth = Synth(\benjolis, [\out, context.out_b.index]);
 
         this.addCommand(\setFreq1, "f", { arg msg;
-            var spec = ControlSpec( 20.0, 14000.0, \exp, 0, 70, "Hz");
             var val = msg[1].asFloat;
-            benjolisSynth.set(\freq1, spec.map(val));
+            benjolisSynth.set(\freq1, val);
         });
 
         this.addCommand(\setFreq2, "f", { arg msg;
-            var spec = ControlSpec( 0.1, 14000.0, \exp, 0, 4, "Hz");
             var val = msg[1].asFloat;
-            benjolisSynth.set(\freq2, spec.map(val));
+            benjolisSynth.set(\freq2, val);
         });
 
         this.addCommand(\setFiltFreq, "f", { arg msg;
-            var spec = ControlSpec( 20.0, 20000.0, \exp, 0, 40, "Hz");
             var val = msg[1].asFloat;
-            benjolisSynth.set(\filtFreq, spec.map(val));
+            benjolisSynth.set(\filtFreq, val);
         });
 
         this.addCommand(\setQ, "f", { arg msg;
-            var spec = ControlSpec( 0.0, 1.0, \lin, 0, 0.82);
             var val = msg[1].asFloat;
-            benjolisSynth.set(\q, spec.map(val));
+            benjolisSynth.set(\q, val);
         });
 
         this.addCommand(\setGain, "f", { arg msg;
-            var spec = ControlSpec( 0.0, 3.0, \lin, 0, 1);
             var val = msg[1].asFloat;
-            benjolisSynth.set(\gain, spec.map(val));
+            benjolisSynth.set(\gain, val);
         });
 
         this.addCommand(\setFilterType, "f", { arg msg;
-            var spec = ControlSpec( 0.0, 3.0, \lin, 1, 0);
             var val = msg[1].asFloat;
-            benjolisSynth.set(\filterType, spec.map(val));
+            benjolisSynth.set(\filterType, val);
         });
 
         this.addCommand(\setRungler1, "f", { arg msg;
-            var spec = ControlSpec( 0.0, 1.0, \lin, 0, 0.16);
             var val = msg[1].asFloat;
-            benjolisSynth.set(\rungler1, spec.map(val));
+            benjolisSynth.set(\rungler1, val);
         });
 
         this.addCommand(\setRungler2, "f", { arg msg;
-            var spec = ControlSpec( 0.0, 1.0, \lin, 0, 0);
             var val = msg[1].asFloat;
-            benjolisSynth.set(\rungler2, spec.map(val));
+            benjolisSynth.set(\rungler2, val);
         });
 
         this.addCommand(\setRunglerFilt, "f", { arg msg;
-            var spec = ControlSpec( 0.0, 1.0, \lin, 0, 9);
             var val = msg[1].asFloat;
-            benjolisSynth.set(\runglerFilt, spec.map(val));
+            benjolisSynth.set(\runglerFilt, val);
         });
 
         this.addCommand(\setLoop, "f", { arg msg;
-            var spec = ControlSpec( 0.0, 1.0, \lin, 0, 1);
             var val = msg[1].asFloat;
-            benjolisSynth.set(\loop, spec.map(val));
+            benjolisSynth.set(\loop, val);
         });
 
         this.addCommand(\setScale, "f", { arg msg;
-            var spec = ControlSpec( 0.0, 1.0, \lin, 0, 1);
             var val = msg[1].asFloat;
-            benjolisSynth.set(\scale, spec.map(val));
+            benjolisSynth.set(\scale, val);
         });
 
         this.addCommand(\setOutSignal, "f", { arg msg;
-            var spec = ControlSpec( 0.0, 6.0, \lin, 1, 6);
             var val = msg[1].asFloat;
-            benjolisSynth.set(\outSignal, spec.map(val));
+            benjolisSynth.set(\outSignal, val);
+        });
+        
+        this.addCommand(\setAmp, "f", { arg msg;
+            var val = msg[1].asFloat;
+            benjolisSynth.set(\amp, val);
         });
     }
 
