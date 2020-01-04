@@ -39,7 +39,6 @@ local paramsInList = {}
 
 local SCREEN_FRAMERATE = 15
 local screen_refresh_metro
-local screen_dirty = true
 
 function init()
   -- screen: turn on anti-alias
@@ -71,10 +70,7 @@ function init()
   -- Start drawing to screen
   screen_refresh_metro = metro.init()
   screen_refresh_metro.event = function()
-    if screen_dirty then
-      screen_dirty = false
-      redraw()
-    end
+    redraw()
   end
   screen_refresh_metro:start(1 / SCREEN_FRAMERATE)
 end
@@ -83,7 +79,6 @@ function addParams()
   params:add{type = "number", id = "midi_device", name = "MIDI Device", min = 1, max = 4, default = 1, action = function(value)
     midi_in_device.event = nil
     midi_in_device = midi.connect(value)
-    midi_in_device.event = midi_event
   end}
 
   local channels = {"All"}
@@ -158,7 +153,6 @@ function enc(n, delta)
       setParam(paramID, dialGroupIndex+1, deltaValue)
     end
 
-  screen_dirty = true
 end
 
 local stashedVol = 0
@@ -198,7 +192,6 @@ function key(n, z)
     end
   end
 
-  screen_dirty = true
   redraw()
 end
 
@@ -212,6 +205,7 @@ function redraw()
   -- draw Dials
   for i=1,numDials do
     dials[i]:redraw()
+    dials[i]:set_value(params:get_raw(paramsInList[i][1]))
     dials[i].active = false
   end
 
