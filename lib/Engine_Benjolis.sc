@@ -23,7 +23,7 @@ Engine_Benjolis : CroneEngine {
 
     alloc {
         SynthDef.new(\benjolis, {
-            | out, freq1= 40, freq2=4, scale=1, rungler1=0.16, rungler2=0.0, runglerFilt=9, loop=0, filtFreq=40, q=0.82, gain=1, filterType=0, outSignal=6, amp=1|
+            | out, freq1= 40, freq2=4, scale=1, rungler1=0.16, rungler2=0.0, runglerFilt=9, loop=0, filtFreq=40, q=0.82, gain=1, filterType=0, outSignal=6, amp=0, width=0|
             var osc1, osc2, tri1, tri2, sh0, sh1, sh2, sh3, sh4, sh5, sh6, sh7, sh8=1, rungler, pwm, filt, output;
             var sr;
             var osc2freq, buf, bufR;
@@ -70,11 +70,11 @@ Engine_Benjolis : CroneEngine {
 
 
             filt = Select.ar(filterType, [
-                RLPF.ar(pwm,(rungler*runglerFilt)+filtFreq,q* -1 +1,gain),
-                //BMoog.ar(pwm,(rungler*runglerFilt)+filtFreq,q,0,gain),
-                RHPF.ar(pwm,(rungler*runglerFilt)+filtFreq,q* -1 +1,gain),
-                SVF.ar(pwm,(rungler*runglerFilt)+filtFreq,q,1,0,0,0,0,gain),
-                DFM1.ar(pwm,(rungler*runglerFilt)+filtFreq,q,gain,1)
+                RLPF.ar(pwm,(rungler*runglerFilt)+filtFreq, q* -1 +1,gain),
+                //BMoog.ar(pwm,(rungler*runglerFilt)+filtFreq, q,0,gain),
+                RHPF.ar(pwm,(rungler*runglerFilt)+filtFreq, q* -1 +1,gain),
+                SVF.ar(pwm,(rungler*runglerFilt)+filtFreq, q, 1,0,0,0,0,gain),
+                DFM1.ar(pwm,(rungler*runglerFilt)+filtFreq, q, gain,1)
             ]);
 
 
@@ -83,9 +83,10 @@ Engine_Benjolis : CroneEngine {
 
             ]);
 
-            Out.ar(out, LeakDC.ar(output * amp ! 2));
+            output = [output, DelayL.ar(output, delaytime: width.lag(1))] * amp;
+            Out.ar(out, LeakDC.ar(output * amp));
         }).add;
-
+        
         context.server.sync;
 
         benjolisSynth = Synth(\benjolis, [\out, context.out_b.index]);
@@ -149,10 +150,15 @@ Engine_Benjolis : CroneEngine {
             var val = msg[1].asFloat;
             benjolisSynth.set(\outSignal, val);
         });
-
+        
         this.addCommand(\setAmp, "f", { arg msg;
             var val = msg[1].asFloat;
             benjolisSynth.set(\amp, val);
+        });
+        
+        this.addCommand(\setWidth, "f", { arg msg;
+            var val = msg[1].asFloat;
+            benjolisSynth.set(\width, val * 0.001);
         });
     }
 

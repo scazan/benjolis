@@ -71,6 +71,7 @@ function init()
     {"setOutSignal", "out", "", "out signal"},
     {"setLoop", "loop", "", "loop"},
     {"setAmp", "vol", "", "amp"},
+    {"setWidth", "width", "", "width"},
   }
 
   -- add parameters from the engine
@@ -144,22 +145,23 @@ table.insert(paramNames, 1, "--")
   params:add{type = "control", controlspec = ControlSpec.new( 20.0, 14000.0, "exp", 0, 70, "Hz"), id = "setFreq1", name = "freq 1", action = engine.setFreq1}
   params:add{type = "control", controlspec = ControlSpec.new( 0.1, 14000.0, "exp", 0, 4, "Hz"), id = "setFreq2", name = "freq 2", action = engine.setFreq2}
   params:add{type = "control", controlspec = ControlSpec.new( 20.0, 20000.0, "exp", 0, 40, "Hz"), id = "setFiltFreq", name = "filter freq", action = engine.setFiltFreq}
-  params:add{type = "control", controlspec = ControlSpec.new(0, 1, "lin", 1, 0.5, ""), id = "setFilterType", name = "filter type", action = engine.setFilterType}
+  params:add{type = "control", controlspec = ControlSpec.new(0, 1, "lin", 1, 0, ""), id = "setFilterType", name = "filter type", action = engine.setFilterType}
 
   params:add_separator()
   params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 1), id = "setLoop", name = "loop", action = engine.setLoop}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0.0001, 9), id = "setRunglerFilt", name = "rungler filter freq", action = engine.setRunglerFilt}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 0.82), id = "setQ", name = "Q", action = engine.setQ}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.01, 9.0, "lin", 0, 1), id = "setRunglerFilt", name = "rungler filter freq", action = engine.setRunglerFilt}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.001, 1.0, "lin", 0, 0.02), id = "setQ", name = "Q", action = engine.setQ}
 
   params:add_separator()
-  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 0.16), id = "setRungler1", name = "rungler 1 freq", action = engine.setRungler1}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 0), id = "setRungler2", name = "rungler 2 freq", action = engine.setRungler2}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.001, 1.0, "lin", 0, 0.16), id = "setRungler1", name = "rungler 1 freq", action = engine.setRungler1}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.001, 1.0, "lin", 0, 0.001), id = "setRungler2", name = "rungler 2 freq", action = engine.setRungler2}
   params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 1), id = "setScale", name = "scale", action = engine.setScale}
 
   params:add_separator()
   params:add{type = "control", controlspec = ControlSpec.new( 0.0, 6.0, "lin", 1, 6), id = "setOutSignal", name = "out signal", action = engine.setOutSignal}
   params:add{type = "control", controlspec = ControlSpec.new( 0.0, 6.0, "lin", 1, 6), id = "setGain", name = "gain", action = engine.setGain}
   params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 0), id = "setAmp", name = "amp", action = engine.setAmp}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1, "lin", 0.001, 0), id = "setWidth", name = "width", action = engine.setWidth}
 end
 
 
@@ -188,7 +190,6 @@ end
 
 function setParam(paramID, dialGroupIndex, deltaValue)
   params:set_raw(paramID, params:get_raw(paramID) + deltaValue)
-  -- dials[dialGroupIndex]:set_value(params:get_raw(paramID))
 end
 
 -- encoder function
