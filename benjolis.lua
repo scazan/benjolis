@@ -159,19 +159,19 @@ table.insert(paramNames, 1, "--")
   params:add_separator()
   params:add{type = "control", controlspec = ControlSpec.new( 0.0, 6.0, "lin", 1, 6), id = "setOutSignal", name = "out signal", action = engine.setOutSignal}
   params:add{type = "control", controlspec = ControlSpec.new( 0.0, 6.0, "lin", 1, 6), id = "setGain", name = "gain", action = engine.setGain}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 1), id = "setAmp", name = "amp", action = engine.setAmp}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 0), id = "setAmp", name = "amp", action = engine.setAmp}
 end
 
 
 function addDials()
   -- make all the dials
-  local dialSpacer = 20
+  local dialSpacer = 22
   local row = 0
   local numColumns = 6
 
   for i=1,numDials do
-    local xOffset = 5 + (dialSpacer * ((i-1) % numColumns)) 
-    local yOffset = 5 + (row * 30)
+    local xOffset = 1 + (dialSpacer * ((i-1) % numColumns)) 
+    local yOffset = 8 + (row * 30)
     local extraSpace = 0;
 
     if ((i % 2) == 1) then
