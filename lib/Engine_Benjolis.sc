@@ -85,7 +85,7 @@ Engine_Benjolis : CroneEngine {
 
             Out.ar(out, LeakDC.ar(output * amp ! 2));
         }).add;
-        
+
         context.server.sync;
 
         benjolisSynth = Synth(\benjolis, [\out, context.out_b.index]);
@@ -149,7 +149,7 @@ Engine_Benjolis : CroneEngine {
             var val = msg[1].asFloat;
             benjolisSynth.set(\outSignal, val);
         });
-        
+
         this.addCommand(\setAmp, "f", { arg msg;
             var val = msg[1].asFloat;
             benjolisSynth.set(\amp, val);

@@ -29,6 +29,8 @@
 
 local UI = require "ui"
 local ControlSpec = require "controlspec"
+local MusicUtil = require "musicutil"
+
 engine.name = 'Benjolis'
 
 local dials = {}
@@ -40,6 +42,16 @@ local paramsInList = {}
 local SCREEN_FRAMERATE = 15
 local screen_refresh_metro
 
+-- https://stackoverflow.com/questions/11669926/is-there-a-lua-equivalent-of-scalas-map-or-cs-select-function
+function map(f, t)
+  local t1 = {}
+  local t_len = #t
+  for i = 1, t_len do
+    t1[i] = f(t[i])
+  end
+  return t1
+end
+
 function init()
   -- screen: turn on anti-alias
   screen.aa(1)
@@ -47,18 +59,18 @@ function init()
 
   -- IDs and short names
   paramsInList = {
-    {"setFreq1", "f1", "hz"},
-    {"setFreq2", "f2", "hz"},
-    {"setFiltFreq", "flt", "hz"},
-    {"setFilterType", "typ", ""},
-    {"setRungler1", "r1", "hz"},
-    {"setRungler2", "r2", "hz"},
-    {"setRunglerFilt", "rflt", "hz"},
-    {"setQ", "Q", ""},
-    {"setScale", "scl", ""},
-    {"setOutSignal", "out", ""},
-    {"setLoop", "loop", ""},
-    {"setAmp", "vol", ""},
+    {"setFreq1", "f1", "hz", "freq 1"},
+    {"setFreq2", "f2", "hz", "freq 2"},
+    {"setFiltFreq", "flt", "hz", "filter freq"},
+    {"setFilterType", "typ", "", "filter type"},
+    {"setRungler1", "r1", "hz", "rungler 1 freq"},
+    {"setRungler2", "r2", "hz", "rungler 2 freq"},
+    {"setRunglerFilt", "rflt", "hz", "rungler filter"},
+    {"setQ", "Q", "", "Q"},
+    {"setScale", "scl", "", "scale"},
+    {"setOutSignal", "out", "", "out signal"},
+    {"setLoop", "loop", "", "loop"},
+    {"setAmp", "vol", "", "amp"},
   }
 
   -- add parameters from the engine
@@ -75,31 +87,74 @@ function init()
   screen_refresh_metro:start(1 / SCREEN_FRAMERATE)
 end
 
+local midiNoteParamMapping = nil
+function handleMIDINote(data)
+  local msg = midi.to_msg(data)
+  local midiChannel = params:get("midi_channel") - 1
+  
+  -- check for "all" midi channels. if we are "all" then pretend this is the "correct" channel
+  if (midiChannel == 0) then
+    midiChannel = msg.ch
+  end
+  
+  if (msg.type == "note_on" and msg.ch == midiChannel) then
+    if (midiNoteParamMapping ~= nil and midiNoteParamMapping ~= 1) then
+      local paramMetadata = paramsInList[midiNoteParamMapping-1]
+      
+      if (paramMetadata[3] == "hz") then
+        -- convert to hz
+        local freq = MusicUtil.note_num_to_freq(msg.note)
+        params:set(paramMetadata[1], freq)
+      else
+        print('not hz')
+        -- otherwise treat it as a control message 0-1
+        params:set_raw(paramMetadata[1], msg.note/127)
+      end
+    end
+  end
+end
+
+local midiInDevice = {}
+local midiInChannel = 0
+
 function addParams()
   params:add{type = "number", id = "midi_device", name = "MIDI Device", min = 1, max = 4, default = 1, action = function(value)
-    midi_in_device.event = nil
-    midi_in_device = midi.connect(value)
+    midiInDevice.event = nil
+    midiInDevice = midi.connect(value)
+    midiInDevice.event = handleMIDINote
   end}
+
+local paramNames = map(function(list) return list[4] end, paramsInList)
+table.insert(paramNames, 1, "--")
+  params:add{
+    type = "option",
+    id = "noteMapping",
+    name = "Note Mapping",
+    options = paramNames,
+    action = function(value)
+      midiNoteParamMapping = value
+    end
+  }
 
   local channels = {"All"}
   for i = 1, 16 do table.insert(channels, i) end
   params:add{type = "option", id = "midi_channel", name = "MIDI Channel", options = channels}
   params:add_separator()
 
-  params:add{type = "control", controlspec = ControlSpec.new( 20.0, 14000.0, "exp", 0, 70, "Hz"), id = "setFreq1", name = "frequency 1", action = engine.setFreq1}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.1, 14000.0, "exp", 0, 4, "Hz"), id = "setFreq2", name = "frequency 2", action = engine.setFreq2}
-  params:add{type = "control", controlspec = ControlSpec.new( 20.0, 20000.0, "exp", 0, 40, "Hz"), id = "setFiltFreq", name = "filter frequency", action = engine.setFiltFreq}
+  params:add{type = "control", controlspec = ControlSpec.new( 20.0, 14000.0, "exp", 0, 70, "Hz"), id = "setFreq1", name = "freq 1", action = engine.setFreq1}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.1, 14000.0, "exp", 0, 4, "Hz"), id = "setFreq2", name = "freq 2", action = engine.setFreq2}
+  params:add{type = "control", controlspec = ControlSpec.new( 20.0, 20000.0, "exp", 0, 40, "Hz"), id = "setFiltFreq", name = "filter freq", action = engine.setFiltFreq}
   params:add{type = "control", controlspec = ControlSpec.new(0, 1, "lin", 1, 0.5, ""), id = "setFilterType", name = "filter type", action = engine.setFilterType}
 
   params:add_separator()
   params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 1), id = "setLoop", name = "loop", action = engine.setLoop}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 9), id = "setRunglerFilt", name = "rungler filter frequency", action = engine.setRunglerFilt}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 0.82), id = "setQ", name = "set Q", action = engine.setQ}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0.0001, 9), id = "setRunglerFilt", name = "rungler filter freq", action = engine.setRunglerFilt}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 0.82), id = "setQ", name = "Q", action = engine.setQ}
 
   params:add_separator()
-  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 0.16), id = "setRungler1", name = "set rungler 1 frequency", action = engine.setRungler1}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 0), id = "setRungler2", name = "set rungler 2 frequency", action = engine.setRungler2}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 1), id = "setScale", name = "set scale", action = engine.setScale}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 0.16), id = "setRungler1", name = "rungler 1 freq", action = engine.setRungler1}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 0), id = "setRungler2", name = "rungler 2 freq", action = engine.setRungler2}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 1), id = "setScale", name = "scale", action = engine.setScale}
 
   params:add_separator()
   params:add{type = "control", controlspec = ControlSpec.new( 0.0, 6.0, "lin", 1, 6), id = "setOutSignal", name = "out signal", action = engine.setOutSignal}
@@ -133,7 +188,7 @@ end
 
 function setParam(paramID, dialGroupIndex, deltaValue)
   params:set_raw(paramID, params:get_raw(paramID) + deltaValue)
-  dials[dialGroupIndex]:set_value(params:get_raw(paramID))
+  -- dials[dialGroupIndex]:set_value(params:get_raw(paramID))
 end
 
 -- encoder function
