@@ -83,7 +83,7 @@ Engine_Benjolis : CroneEngine {
 
             ]);
 
-            output = [DelayL.ar(output, delaytime: (pan.clip(-1,0) * -1).lag(0.1)), DelayL.ar(output, delaytime: pan.clip(0,1).lag(0.1))] * amp;
+            output = [DelayL.ar(output, delaytime: pan.clip(0,1).lag(0.1)), DelayL.ar(output, delaytime: (pan.clip(-1,0) * -1).lag(0.1))] * amp;
             Out.ar(out, LeakDC.ar(output * amp));
         }).add;
         
