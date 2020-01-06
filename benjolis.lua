@@ -1,30 +1,59 @@
 -- Benjolis
 --
--- A norns version of Alejandro Olarte's Benjolis SC patch
--- Instrument inspired from Rob Hordijk's Benjolin, it requires sc3-plugins (PulseDPW, SVF and DFM1)
+-- a norns version of 
+-- Alejandro Olarte's Benjolis
+-- SC patch
 --
 -- UI:
--- Use K2 and K3 to
+-- use K2 and K3 to
 -- cycle through pairs of dials.
 --
--- Use E2 and E3 to
+-- use E2 and E3 to
 -- adjust the left and right
--- dials of the pair
+-- dials of the pair.
 --
--- Use E1 to 
+-- use E1 to 
 -- control volume.
 --
--- If you hold K1 (shift)
+-- if you hold K1 (shift)
 -- and use K2, you will
 -- have a momentary mute.
 --
--- If you hold K1 (shift)
+-- if you hold K1 (shift)
 -- and use K3, you will
 -- have a mute that toggles.
 --
--- Thanks to Alejandro Olarte
--- for the SynthDef
--- Norns version: @scazan
+-- CONTROLS:
+-- at the bottom of the params
+-- menu there are four MIDI
+-- mappings that you can
+-- enable.
+--
+-- first choose the external
+-- device.
+--
+-- then there are three options
+-- for each mapping:
+-- - enable mapping
+-- - MIDI channel
+-- - note mapping
+--
+-- enable mapping is, itself,
+-- MIDI mappable and simply
+-- enables this mapping or not.
+--
+-- MIDI channel sets the
+-- incoming MIDI channel
+-- for this mapping to 
+-- listen to.
+--
+-- note mapping sets which
+-- param this will be
+-- mapped to.
+--
+-- thanks to Alejandro Olarte
+-- for the SynthDef.
+-- norns version: @scazan
 
 
 local UI = require "ui"
