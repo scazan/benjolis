@@ -71,7 +71,7 @@ function init()
     {"setOutSignal", "out", "", "out signal"},
     {"setLoop", "loop", "", "loop"},
     {"setAmp", "vol", "", "amp"},
-    {"setWidth", "width", "", "width"},
+    {"setPan", "pan", "", "pan"},
   }
 
   -- add parameters from the engine
@@ -122,6 +122,16 @@ end
 local midiInDevice = {}
 local midiInChannel = 0
 
+-- bind all engine calls to set screen dirty
+local bindUIToCallback = function(callback)
+  local setDirty = function(arg)
+    screen_dirty = true
+    callback(arg)
+  end
+  
+  return setDirty
+end
+
 function addParams()
   params:add{type = "number", id = "midi_device", name = "MIDI Device", min = 1, max = 4, default = 1, action = function(value)
     midiInDevice.event = nil
@@ -141,16 +151,6 @@ table.insert(paramNames, 1, "--")
     end
   }
 
-  -- bind all engine calls to set screen dirty
-  local bindUIToCallback = function(callback)
-    local setDirty = function(arg)
-      screen_dirty = true
-      callback(arg)
-    end
-    
-    return setDirty
-  end
-  
   local channels = {"All"}
   for i = 1, 16 do table.insert(channels, i) end
   params:add{type = "option", id = "midi_channel", name = "MIDI Channel", options = channels}
@@ -175,7 +175,7 @@ table.insert(paramNames, 1, "--")
   params:add{type = "control", controlspec = ControlSpec.new( 0.0, 6.0, "lin", 1, 6), id = "setOutSignal", name = "out signal", action = bindUIToCallback(engine.setOutSignal)}
   params:add{type = "control", controlspec = ControlSpec.new( 0.0, 6.0, "lin", 1, 6), id = "setGain", name = "gain", action = bindUIToCallback(engine.setGain)}
   params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 0), id = "setAmp", name = "amp", action = bindUIToCallback(engine.setAmp)}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1, "lin", 0.001, 0), id = "setWidth", name = "width", action = bindUIToCallback(engine.setWidth)}
+  params:add{type = "control", controlspec = ControlSpec.new( -1, 1, "lin", 0.001, 0), id = "setPan", name = "pan", action = bindUIToCallback(engine.setPan)}
 end
 
 
