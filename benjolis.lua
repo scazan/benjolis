@@ -133,11 +133,15 @@ local bindUIToCallback = function(callback)
 end
 
 function addParams()
-  params:add{type = "number", id = "midi_device", name = "MIDI Device", min = 1, max = 4, default = 1, action = function(value)
+  local bindMIDIDevice = function(value)
     midiInDevice.event = nil
     midiInDevice = midi.connect(value)
     midiInDevice.event = handleMIDINote
-  end}
+  end
+  
+  -- set default midi device to 1
+  bindMIDIDevice(1)
+  params:add{type = "number", id = "midi_device", name = "MIDI Device", min = 1, max = 4, default = 1, action = bindMIDIDevice}
 
 local paramNames = map(function(list) return list[4] end, paramsInList)
 table.insert(paramNames, 1, "--")
