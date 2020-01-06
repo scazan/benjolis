@@ -23,7 +23,7 @@ Engine_Benjolis : CroneEngine {
 
     alloc {
         SynthDef.new(\benjolis, {
-            | out, freq1= 40, freq2=4, scale=1, rungler1=0.16, rungler2=0.0, runglerFilt=9, loop=0, filtFreq=40, q=0.82, gain=1, filterType=0, outSignal=6, amp=0, width=0|
+            | out, freq1= 40, freq2=4, scale=1, rungler1=0.16, rungler2=0.0, runglerFilt=9, loop=0, filtFreq=40, q=0.82, gain=1, filterType=0, outSignal=6, amp=0, pan=0|
             var osc1, osc2, tri1, tri2, sh0, sh1, sh2, sh3, sh4, sh5, sh6, sh7, sh8=1, rungler, pwm, filt, output;
             var sr;
             var osc2freq, buf, bufR;
@@ -83,7 +83,7 @@ Engine_Benjolis : CroneEngine {
 
             ]);
 
-            output = [output, DelayL.ar(output, delaytime: width.lag(1))] * amp;
+            output = [DelayL.ar(output, delaytime: (pan.clip(-1,0) * -1).lag(0.1)), DelayL.ar(output, delaytime: pan.clip(0,1).lag(0.1))] * amp;
             Out.ar(out, LeakDC.ar(output * amp));
         }).add;
         
@@ -156,9 +156,9 @@ Engine_Benjolis : CroneEngine {
             benjolisSynth.set(\amp, val);
         });
         
-        this.addCommand(\setWidth, "f", { arg msg;
+        this.addCommand(\setPan, "f", { arg msg;
             var val = msg[1].asFloat;
-            benjolisSynth.set(\width, val * 0.001);
+            benjolisSynth.set(\pan, val * 0.001);
         });
     }
 

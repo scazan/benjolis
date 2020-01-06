@@ -93,27 +93,30 @@ function init()
 end
 
 local midiNoteParamMapping = nil
+local midiNoteParamMappingEnabled = false
 function handleMIDINote(data)
-  local msg = midi.to_msg(data)
-  local midiChannel = params:get("midi_channel") - 1
-  
-  -- check for "all" midi channels. if we are "all" then pretend this is the "correct" channel
-  if (midiChannel == 0) then
-    midiChannel = msg.ch
-  end
-  
-  if (msg.type == "note_on" and msg.ch == midiChannel) then
-    if (midiNoteParamMapping ~= nil and midiNoteParamMapping ~= 1) then
-      local paramMetadata = paramsInList[midiNoteParamMapping-1]
-      
-      if (paramMetadata[3] == "hz") then
-        -- convert to hz
-        local freq = MusicUtil.note_num_to_freq(msg.note)
-        params:set(paramMetadata[1], freq)
-      else
-        print('not hz')
-        -- otherwise treat it as a control message 0-1
-        params:set_raw(paramMetadata[1], msg.note/127)
+  if (midiNoteParamMappingEnabled) then
+    local msg = midi.to_msg(data)
+    local midiChannel = params:get("midi_channel") - 1
+    
+    -- check for "all" midi channels. if we are "all" then pretend this is the "correct" channel
+    if (midiChannel == 0) then
+      midiChannel = msg.ch
+    end
+    
+    if (msg.type == "note_on" and msg.ch == midiChannel) then
+      if (midiNoteParamMapping ~= nil and midiNoteParamMapping ~= 1) then
+        local paramMetadata = paramsInList[midiNoteParamMapping-1]
+        
+        if (paramMetadata[3] == "hz") then
+          -- convert to hz
+          local freq = MusicUtil.note_num_to_freq(msg.note)
+          params:set(paramMetadata[1], freq)
+        else
+          print('not hz')
+          -- otherwise treat it as a control message 0-1
+          params:set_raw(paramMetadata[1], msg.note/127)
+        end
       end
     end
   end
@@ -142,22 +145,33 @@ function addParams()
   -- set default midi device to 1
   bindMIDIDevice(1)
   params:add{type = "number", id = "midi_device", name = "MIDI Device", min = 1, max = 4, default = 1, action = bindMIDIDevice}
+  
+  local channels = {"all"}
+  for i = 1, 16 do table.insert(channels, i) end
+  params:add{type = "option", id = "midi_channel", name = "MIDI Channel", options = channels}
 
-local paramNames = map(function(list) return list[4] end, paramsInList)
-table.insert(paramNames, 1, "--")
+  params:add{type = "control", controlspec = ControlSpec.new( 0, 1, "lin", 1, 1, ""), id = "mappingEnable", name = "enable note mapping", action = function(value)
+      print(value)
+      if (value == 1) then
+        midiNoteParamMappingEnabled = true
+      else
+        midiNoteParamMappingEnabled = false
+      end
+    end
+  }
+  
+  local paramNames = map(function(list) return list[4] end, paramsInList)
+  table.insert(paramNames, 1, "--")
   params:add{
     type = "option",
     id = "noteMapping",
-    name = "Note Mapping",
+    name = "note mapping",
     options = paramNames,
     action = function(value)
       midiNoteParamMapping = value
     end
   }
 
-  local channels = {"All"}
-  for i = 1, 16 do table.insert(channels, i) end
-  params:add{type = "option", id = "midi_channel", name = "MIDI Channel", options = channels}
   params:add_separator()
 
   params:add{type = "control", controlspec = ControlSpec.new( 20.0, 14000.0, "exp", 0, 70, "Hz"), id = "setFreq1", name = "freq 1", action = bindUIToCallback(engine.setFreq1)}
