@@ -118,7 +118,6 @@ function handleMIDINote(data)
               local freq = MusicUtil.note_num_to_freq(msg.note)
               params:set(paramMetadata[1], freq)
             else
-              print('not hz')
               -- otherwise treat it as a control message 0-1
               params:set_raw(paramMetadata[1], msg.note/127)
             end
