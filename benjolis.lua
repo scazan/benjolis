@@ -63,8 +63,8 @@ function init()
     {"setFreq2", "f2", "hz", "freq 2"},
     {"setFiltFreq", "flt", "hz", "filter freq"},
     {"setFilterType", "typ", "", "filter type"},
-    {"setRungler1", "r1", "hz", "rungler 1 freq"},
-    {"setRungler2", "r2", "hz", "rungler 2 freq"},
+    {"setRungler1", "r1", "", "rungler 1 freq"},
+    {"setRungler2", "r2", "", "rungler 2 freq"},
     {"setRunglerFilt", "rflt", "hz", "rungler filter"},
     {"setQ", "Q", "", "Q"},
     {"setScale", "scl", "", "scale"},
@@ -92,31 +92,39 @@ function init()
   screen_refresh_metro:start(1 / SCREEN_FRAMERATE)
 end
 
-local midiNoteParamMapping = nil
-local midiNoteParamMappingEnabled = false
+local midiNoteParamMappings = {nil, nil, nil, nil}
+local midiChannels = {1, 1, 1, 1}
+local midiNoteParamMappingEnableds = {false, false, false, false}
 function handleMIDINote(data)
-  if (midiNoteParamMappingEnabled) then
-    local msg = midi.to_msg(data)
-    local midiChannel = params:get("midi_channel") - 1
-    
-    -- check for "all" midi channels. if we are "all" then pretend this is the "correct" channel
-    if (midiChannel == 0) then
-      midiChannel = msg.ch
-    end
-    
-    if (msg.type == "note_on" and msg.ch == midiChannel) then
-      if (midiNoteParamMapping ~= nil and midiNoteParamMapping ~= 1) then
-        local paramMetadata = paramsInList[midiNoteParamMapping-1]
+  local msg = midi.to_msg(data)
+  if (msg.type == "note_on") then
+    for i,enabled in pairs(midiNoteParamMappingEnableds) do
+      if (enabled) then
+        local midiNoteParamMapping = midiNoteParamMappings[i]
+        -- local midiChannel = params:get("midi_channel") - 1
+        local midiChannel = midiChannels[i] - 1
         
-        if (paramMetadata[3] == "hz") then
-          -- convert to hz
-          local freq = MusicUtil.note_num_to_freq(msg.note)
-          params:set(paramMetadata[1], freq)
-        else
-          print('not hz')
-          -- otherwise treat it as a control message 0-1
-          params:set_raw(paramMetadata[1], msg.note/127)
+        -- check for "all" midi channels. if we are "all" then pretend this is the "correct" channel
+        if (midiChannel == 0) then
+          midiChannel = msg.ch
         end
+        
+        if (msg.ch == midiChannel) then
+          if (midiNoteParamMapping ~= nil and midiNoteParamMapping ~= 1) then
+            local paramMetadata = paramsInList[midiNoteParamMapping-1]
+            
+            if (paramMetadata[3] == "hz") then
+              -- convert to hz
+              local freq = MusicUtil.note_num_to_freq(msg.note)
+              params:set(paramMetadata[1], freq)
+            else
+              print('not hz')
+              -- otherwise treat it as a control message 0-1
+              params:set_raw(paramMetadata[1], msg.note/127)
+            end
+          end
+        end
+    
       end
     end
   end
@@ -136,66 +144,91 @@ local bindUIToCallback = function(callback)
 end
 
 function addParams()
+  
+  params:add{type = "control", controlspec = ControlSpec.new( 20.0, 14000.0, "exp", 0, 70, "Hz"), id = "setFreq1", name = "freq 1", action = bindUIToCallback(engine.setFreq1)}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.1, 14000.0, "exp", 0, 4, "Hz"), id = "setFreq2", name = "freq 2", action = bindUIToCallback(engine.setFreq2)}
+  params:add{type = "control", controlspec = ControlSpec.new( 20.0, 20000.0, "exp", 0, 40, "Hz"), id = "setFiltFreq", name = "filter freq", action = bindUIToCallback(engine.setFiltFreq)}
+  params:add{type = "control", controlspec = ControlSpec.new(0, 1, "lin", 1, 0, ""), id = "setFilterType", name = "filter type", action = bindUIToCallback(engine.setFilterType)}
+  params:add_separator()
+
+  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 1), id = "setLoop", name = "loop", action = bindUIToCallback(engine.setLoop)}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.01, 9.0, "lin", 0, 1), id = "setRunglerFilt", name = "rungler filter freq", action = bindUIToCallback(engine.setRunglerFilt)}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.001, 1.0, "lin", 0, 0.02), id = "setQ", name = "Q", action = bindUIToCallback(engine.setQ)}
+  params:add_separator()
+
+  params:add{type = "control", controlspec = ControlSpec.new( 0.001, 1.0, "lin", 0, 0.16), id = "setRungler1", name = "rungler 1 freq", action = bindUIToCallback(engine.setRungler1)}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.001, 1.0, "lin", 0, 0.001), id = "setRungler2", name = "rungler 2 freq", action = bindUIToCallback(engine.setRungler2)}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 1), id = "setScale", name = "scale", action = bindUIToCallback(engine.setScale)}
+  params:add_separator()
+
+  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 6.0, "lin", 1, 6), id = "setOutSignal", name = "out signal", action = bindUIToCallback(engine.setOutSignal)}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 6.0, "lin", 1, 6), id = "setGain", name = "gain", action = bindUIToCallback(engine.setGain)}
+  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 0), id = "setAmp", name = "amp", action = bindUIToCallback(engine.setAmp)}
+  params:add{type = "control", controlspec = ControlSpec.new( -1, 1, "lin", 0.001, 0), id = "setPan", name = "pan", action = bindUIToCallback(engine.setPan)}
+  params:add_separator()
+  
+  addMIDIParams()
+end
+
+function addMIDIParams() 
   local bindMIDIDevice = function(value)
     midiInDevice.event = nil
     midiInDevice = midi.connect(value)
     midiInDevice.event = handleMIDINote
   end
-  
+
   -- set default midi device to 1
   bindMIDIDevice(1)
   params:add{type = "number", id = "midi_device", name = "MIDI Device", min = 1, max = 4, default = 1, action = bindMIDIDevice}
-  
+  params:add_separator()
+
   local channels = {"all"}
   for i = 1, 16 do table.insert(channels, i) end
-  params:add{type = "option", id = "midi_channel", name = "MIDI Channel", options = channels}
 
-  params:add{type = "control", controlspec = ControlSpec.new( 0, 1, "lin", 1, 0, ""), id = "mappingEnable", name = "enable note mapping", action = function(value)
-      print(value)
-      if (value == 1) then
-        midiNoteParamMappingEnabled = true
-      else
-        midiNoteParamMappingEnabled = false
-      end
-    end
-  }
-  
   local paramNames = map(function(list) return list[4] end, paramsInList)
   table.insert(paramNames, 1, "--")
-  params:add{
-    type = "option",
-    id = "noteMapping",
-    name = "note mapping",
-    options = paramNames,
-    action = function(value)
-      midiNoteParamMapping = value
+
+  -- common functions
+  local getParamEnabler = function(index)
+    return function(value)
+      if (value == 1) then
+        midiNoteParamMappingEnableds[index] = true
+      else
+        midiNoteParamMappingEnableds[index] = false
+      end
     end
-  }
+  end
 
-  params:add_separator()
+  local getMappingSetter = function(index)
+    return function(value)
+      midiNoteParamMappings[index] = value
+    end
+  end
+  
+  local getMappingChannelSetter = function(index)
+    return function(value)
+      midiChannels[index] = value
+    end
+  end
+  
+  -- MIDI Note Mappings
+  local createMIDIMapper = function(index)
+    params:add{type = "control", controlspec = ControlSpec.new( 0, 1, "lin", 1, 0, ""), id = "mappingEnable"..index, name = "enable mapping "..index, action = getParamEnabler(index)}
+    params:add{type = "option", id = "midi_channel"..index, name = "MIDI Channel", options = channels, action = getMappingChannelSetter(index)}
+    params:add{
+      type = "option",
+      id = "noteMapping"..index,
+      name = "note mapping "..index,
+      options = paramNames,
+      action = getMappingSetter(index)
+    }
+    params:add_separator()
+  end
 
-  params:add{type = "control", controlspec = ControlSpec.new( 20.0, 14000.0, "exp", 0, 70, "Hz"), id = "setFreq1", name = "freq 1", action = bindUIToCallback(engine.setFreq1)}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.1, 14000.0, "exp", 0, 4, "Hz"), id = "setFreq2", name = "freq 2", action = bindUIToCallback(engine.setFreq2)}
-  params:add{type = "control", controlspec = ControlSpec.new( 20.0, 20000.0, "exp", 0, 40, "Hz"), id = "setFiltFreq", name = "filter freq", action = bindUIToCallback(engine.setFiltFreq)}
-  params:add{type = "control", controlspec = ControlSpec.new(0, 1, "lin", 1, 0, ""), id = "setFilterType", name = "filter type", action = bindUIToCallback(engine.setFilterType)}
-
-  params:add_separator()
-  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 1), id = "setLoop", name = "loop", action = bindUIToCallback(engine.setLoop)}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.01, 9.0, "lin", 0, 1), id = "setRunglerFilt", name = "rungler filter freq", action = bindUIToCallback(engine.setRunglerFilt)}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.001, 1.0, "lin", 0, 0.02), id = "setQ", name = "Q", action = bindUIToCallback(engine.setQ)}
-
-  params:add_separator()
-  params:add{type = "control", controlspec = ControlSpec.new( 0.001, 1.0, "lin", 0, 0.16), id = "setRungler1", name = "rungler 1 freq", action = bindUIToCallback(engine.setRungler1)}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.001, 1.0, "lin", 0, 0.001), id = "setRungler2", name = "rungler 2 freq", action = bindUIToCallback(engine.setRungler2)}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 1), id = "setScale", name = "scale", action = bindUIToCallback(engine.setScale)}
-
-  params:add_separator()
-  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 6.0, "lin", 1, 6), id = "setOutSignal", name = "out signal", action = bindUIToCallback(engine.setOutSignal)}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 6.0, "lin", 1, 6), id = "setGain", name = "gain", action = bindUIToCallback(engine.setGain)}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 0), id = "setAmp", name = "amp", action = bindUIToCallback(engine.setAmp)}
-  params:add{type = "control", controlspec = ControlSpec.new( -1, 1, "lin", 0.001, 0), id = "setPan", name = "pan", action = bindUIToCallback(engine.setPan)}
+  for i=1,4 do
+    createMIDIMapper(i)
+  end
 end
-
 
 function addDials()
   -- make all the dials
