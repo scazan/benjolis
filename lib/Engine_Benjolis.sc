@@ -80,11 +80,12 @@ Engine_Benjolis : CroneEngine {
 
             output = Select.ar(outSignal, [
                 tri1, osc1, tri2, osc2, pwm, sh0, filt
-
             ]);
+            
 
-            output = [DelayL.ar(output, delaytime: pan.clip(0,1).lag(0.1)), DelayL.ar(output, delaytime: (pan.clip(-1,0) * -1).lag(0.1))] * amp;
-            Out.ar(out, LeakDC.ar(output * amp));
+            output = (output * amp).tanh;
+            output = [DelayL.ar(output, delaytime: pan.clip(0,1).lag(0.1)), DelayL.ar(output, delaytime: (pan.clip(-1,0) * -1).lag(0.1))];
+            Out.ar(out, LeakDC.ar(output));
         }).add;
         
         context.server.sync;
