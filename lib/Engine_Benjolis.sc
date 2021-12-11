@@ -81,13 +81,12 @@ Engine_Benjolis : CroneEngine {
             output = Select.ar(outSignal, [
                 tri1, osc1, tri2, osc2, pwm, sh0, filt
             ]);
-            
 
             output = (output * amp).tanh;
             output = [DelayL.ar(output, delaytime: pan.clip(0,1).lag(0.1)), DelayL.ar(output, delaytime: (pan.clip(-1,0) * -1).lag(0.1))];
             Out.ar(out, LeakDC.ar(output));
         }).add;
-        
+
         context.server.sync;
 
         benjolisSynth = Synth(\benjolis, [\out, context.out_b.index]);
@@ -151,12 +150,12 @@ Engine_Benjolis : CroneEngine {
             var val = msg[1].asFloat;
             benjolisSynth.set(\outSignal, val);
         });
-        
+
         this.addCommand(\setAmp, "f", { arg msg;
             var val = msg[1].asFloat;
             benjolisSynth.set(\amp, val);
         });
-        
+
         this.addCommand(\setPan, "f", { arg msg;
             var val = msg[1].asFloat;
             benjolisSynth.set(\pan, val * 0.001);
@@ -166,5 +165,4 @@ Engine_Benjolis : CroneEngine {
     free {
         benjolisSynth.free;
     }
-
 }

@@ -176,7 +176,7 @@ function addParams()
   params:add{type = "control", controlspec = ControlSpec.new( 20.0, 14000.0, "exp", 0, 70, "Hz"), id = "setFreq1", name = "freq 1", action = bindUIToCallback(engine.setFreq1)}
   params:add{type = "control", controlspec = ControlSpec.new( 0.1, 14000.0, "exp", 0, 4, "Hz"), id = "setFreq2", name = "freq 2", action = bindUIToCallback(engine.setFreq2)}
   params:add{type = "control", controlspec = ControlSpec.new( 20.0, 20000.0, "exp", 0, 40, "Hz"), id = "setFiltFreq", name = "filter freq", action = bindUIToCallback(engine.setFiltFreq)}
-  params:add{type = "control", controlspec = ControlSpec.new(0, 1, "lin", 1, 0, ""), id = "setFilterType", name = "filter type", action = bindUIToCallback(engine.setFilterType)}
+  params:add{type = "control", controlspec = ControlSpec.new(0, 3, "lin", 1, 0, ""), id = "setFilterType", name = "filter type", action = bindUIToCallback(engine.setFilterType)}
   params:add_separator()
 
   params:add{type = "control", controlspec = ControlSpec.new( 0.0, 1.0, "lin", 0, 1), id = "setLoop", name = "loop", action = bindUIToCallback(engine.setLoop)}
