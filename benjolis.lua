@@ -276,8 +276,8 @@ function addDials()
 
     -- handle markers for type knob
     if (i == 4) then
-      for k=1,4 do
-        dials[i]:set_marker_position(k, (k/4) - (1/8))
+      for k=1,3 do
+        dials[i]:set_marker_position(k, (k/3) - (1/6))
       end
     end
 

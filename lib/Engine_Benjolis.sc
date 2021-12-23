@@ -72,9 +72,9 @@ Engine_Benjolis : CroneEngine {
             filt = Select.ar(filterType, [
                 RLPF.ar(pwm,(rungler*runglerFilt)+filtFreq, q* -1 +1,gain),
                 //BMoog.ar(pwm,(rungler*runglerFilt)+filtFreq, q,0,gain),
-                RHPF.ar(pwm,(rungler*runglerFilt)+filtFreq, q* -1 +1,gain),
                 SVF.ar(pwm,(rungler*runglerFilt)+filtFreq, q, 1,0,0,0,0,gain),
                 DFM1.ar(pwm,(rungler*runglerFilt)+filtFreq, q, gain,1)
+                RHPF.ar(pwm,(rungler*runglerFilt)+filtFreq, q* -1 +1,gain),
             ]);
 
 
