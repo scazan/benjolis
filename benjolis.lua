@@ -112,7 +112,7 @@ function init()
   -- Start drawing to screen
   screen_refresh_metro = metro.init()
   screen_refresh_metro.event = function()
-    
+
    if screen_dirty then
      screen_dirty = false
      redraw()
@@ -172,10 +172,9 @@ local bindUIToCallback = function(callback)
 end
 
 function addParams()
-  
-  params:add{type = "control", controlspec = ControlSpec.new( 20.0, 14000.0, "exp", 0, 70, "Hz"), id = "setFreq1", name = "freq 1", action = bindUIToCallback(engine.setFreq1)}
-  params:add{type = "control", controlspec = ControlSpec.new( 0.1, 14000.0, "exp", 0, 4, "Hz"), id = "setFreq2", name = "freq 2", action = bindUIToCallback(engine.setFreq2)}
-  params:add{type = "control", controlspec = ControlSpec.new( 20.0, 20000.0, "exp", 0, 40, "Hz"), id = "setFiltFreq", name = "filter freq", action = bindUIToCallback(engine.setFiltFreq)}
+  params:add{type = "control", controlspec = ControlSpec.new(20.0, 14000.0, "exp", 0, 70, "Hz"), id = "setFreq1", name = "freq 1", action = bindUIToCallback(engine.setFreq1)}
+  params:add{type = "control", controlspec = ControlSpec.new(0.1, 14000.0, "exp", 0, 4, "Hz"), id = "setFreq2", name = "freq 2", action = bindUIToCallback(engine.setFreq2)}
+  params:add{type = "control", controlspec = ControlSpec.new(20.0, 20000.0, "exp", 0, 40, "Hz"), id = "setFiltFreq", name = "filter freq", action = bindUIToCallback(engine.setFiltFreq)}
   params:add{type = "control", controlspec = ControlSpec.new(0, 3, "lin", 1, 0, ""), id = "setFilterType", name = "filter type", action = bindUIToCallback(engine.setFilterType)}
   params:add_separator()
 
@@ -274,7 +273,15 @@ function addDials()
     end
 
     dials[i] = UI.Dial.new(xOffset, yOffset, 12, params:get_raw(paramsInList[i][1]), 0, 1, 0.01, 0, nil, paramsInList[i][3], paramsInList[i][2])
-    -- handle markers for out signal
+
+    -- handle markers for type knob
+    if (i == 4) then
+      for k=1,4 do
+        dials[i]:set_marker_position(k, (k/4) - (1/8))
+      end
+    end
+
+    -- handle markers for out knob
     if (i == 10) then
       for k=1,6 do
         dials[i]:set_marker_position(k, (k/6) - (1/12))
