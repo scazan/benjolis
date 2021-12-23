@@ -274,10 +274,16 @@ function addDials()
     end
 
     dials[i] = UI.Dial.new(xOffset, yOffset, 12, params:get_raw(paramsInList[i][1]), 0, 1, 0.01, 0, nil, paramsInList[i][3], paramsInList[i][2])
+    -- handle markers for out signal
+    if (i == 10) then
+      for k=1,6 do
+        dials[i]:set_marker_position(k, (k/6) - (1/12))
+      end
+    end
 
     if ((i % numColumns) == 0) then
       row = row + 1
-      end
+    end
   end
 end
 
